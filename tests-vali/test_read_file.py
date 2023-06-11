@@ -1,6 +1,6 @@
 import pytest
 import os
-from espresso import *
+from ..my_io.espresso import *
 import numpy as np
 from ase import Atoms
 from ase.constraints import FixAtoms

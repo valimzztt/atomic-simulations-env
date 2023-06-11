@@ -10,7 +10,7 @@ or crystal_sg positions.
 Units are converted using CODATA 2006, as used internally by Quantum
 ESPRESSO.
 """
-# THIS IS PART OF THE MY_ASE PACKAGE
+
 import os
 import operator as op
 import re
@@ -1242,10 +1242,7 @@ KEYS = Namelist((
         'w_2']),
     ('CELL', [
         'cell_dynamics', 'press', 'wmass', 'cell_factor', 'press_conv_thr',
-        'cell_dofree']), 
-    ('HUBBARD', [
-        'hubbard_corrections']),
-        ))
+        'cell_dofree'])))
 
 
 # Number of valence electrons in the pseudopotentials recommended by
@@ -1743,18 +1740,15 @@ def write_espresso_in(fd, atoms, input_data=None, pseudopotentials=None,
     else:
         # Just use standard cell block
         input_parameters['system']['ibrav'] = 0
-    # HUBBARD PARAMETER implemented by vali: hubbard_present is a boolean flag that signalizes if we need to add Hubbard parameters
+    
+    # HUBBARD PARAMETER implemented by vali
     hubbard_present = input_parameters['system'].get('lda_plus_u')
+    hubbards = input_parameters['system'].get('Hubbard_U')
+    HUBBARD = 'HUBBARD (ortho-atomic) \n' + 'U Ti-3d 5.0\n' + 'U Zr-4d 3.0\n' 
     if(hubbard_present ==".TRUE."):
-        hubb_corrections = input_parameters['HUBBARD'].get('hubbard_corrections')
-        elements = [triple[0] for triple in hubb_corrections]
-        if(not all(element in atomic_species for element in elements)):
-            raise KeyError('Hubbard correction applied to atomic species not present in ATOMIC SPECIES')
-        hubb_string= []
-        for correction in hubb_corrections:
-            line = 'U {}-{} {}\n'.format(correction[0], correction[1], correction[2])
-            hubb_string.append(line)
-        print(hubb_string)
+        print("Hubbard is present")
+        #input_parameters['HUBBARD'] =[3.0, 6.0] 
+        #hubbards = [3.0, 6.0] 
     # Construct input file into this
     pwi = []
     # Assume sections are ordered (taken care of in namelist construction)
@@ -1834,8 +1828,17 @@ def write_espresso_in(fd, atoms, input_data=None, pseudopotentials=None,
     
     if(hubbard_present ==".TRUE."):
         pwi.append('HUBBARD (ortho-atomic)\n')
-        for line in hubb_string:
-            pwi.append(line)
+        ntype = len(atomic_species.keys())
+        if(ntype ==2 and "Ti" in atomic_species.keys()):
+            print("Titanium is present! ")
+            pwi.append('U Ti-3d 5.0\n')
+        elif(ntype ==2 and "Zr" in atomic_species.keys()):
+            print("Zr is present! ")
+            pwi.append('U Zr-4d 3.0\n')
+        # This means that all three species are present
+        else:
+            pwi.append('U Ti-3d 5.0\n')
+            pwi.append('U Zr-4d 3.0\n')
     # DONE!
     fd.write(''.join(pwi))
     import os 
