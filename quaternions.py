@@ -1,5 +1,6 @@
 import numpy as np
-from ase.atoms import Atoms
+from atoms import Atoms
+from ASE.atoms import Atoms
 
 
 class Quaternions(Atoms):
